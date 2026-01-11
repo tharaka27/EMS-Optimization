@@ -6,6 +6,9 @@ from ..travel.grid8 import Grid8Travel
 from ..policies.dispatch_nearest import NearestETA
 from ..optim.ga import GAOptimizer, GAConfig
 from ..data.synth import mock_calls
+from ..core.sim import Simulation
+
+import sys
 
 def main():
     # stations (4 total; 2 movable)
@@ -15,6 +18,14 @@ def main():
         2: Station(2, (12, 9)),
         3: Station(3, (7, 7)),
     }
+
+    vehicles_allocation = {
+        0: {"A": 1 , "R": 0},
+        1: {"A": 3 , "R": 0},
+        2: {"A": 1 , "R": 0},
+        3: {"A": 1 , "R": 0}
+    }
+
     movable = [1, 2]
 
     travel = Grid8Travel(n_rows=26, n_cols=22, cell_km=2.0, default_speed_kmph=45.0)
@@ -24,6 +35,15 @@ def main():
     t_start = calls[0].t_call
     t_end = t_start + 3600  # 1h
     total_vehicles = 6
+
+    stations_decoded = stations #{sid: Station(sid, rc) for sid, rc in stations.items()}
+    vehicles = build_vehicles_from_allocation(vehicles_allocation)
+
+    for v in vehicles.values():
+        v.loc = stations_decoded[v.home_station_id].grid_rc
+    sim = Simulation(calls, stations_decoded, vehicles, travel, dispatch)
+    kpi = sim.run(t_start=t_start, t_end=t_end, warmup_buffer=90*60.0)
+    print("\nSimulation KPIs before optimization:", kpi)
 
     ga = GAOptimizer(
         calls=calls,
@@ -40,8 +60,7 @@ def main():
     )
 
     best_ch, best_fit = ga.run()
-    print(f"Best fitness (eta_s): {best_fit:.4f}")
-
+    
     stn_plan, alloc_plan = ga.decode_plan(best_ch)
     print("\nDecoded movable station positions:")
     for sid in sorted(stn_plan.stations):
@@ -53,9 +72,9 @@ def main():
         print(f"  Station {sid}: A={counts['A']}, R={counts['R']}")
 
     # Optional evaluation
-    from ..core.sim import Simulation
     stations_decoded = {sid: Station(sid, rc) for sid, rc in stn_plan.stations.items()}
     vehicles = build_vehicles_from_allocation(alloc_plan.counts)
+    
     for v in vehicles.values():
         v.loc = stations_decoded[v.home_station_id].grid_rc
     sim = Simulation(calls, stations_decoded, vehicles, travel, dispatch)
