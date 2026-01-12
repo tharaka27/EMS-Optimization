@@ -4,7 +4,7 @@ from ..simulation.types import Station
 from ..simulation.builder import build_vehicles_from_allocation
 from ..travel.grid8 import Grid8Travel
 from ..policies.dispatch_nearest import NearestETA
-from ..optim.ga import GAOptimizer, GAConfig
+from ..optimization.ga import GAOptimizer, GAConfig
 from ..data.synth import mock_calls
 from ..simulation.engine import Simulation
 
