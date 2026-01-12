@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from typing import Dict, List, Tuple
 import random, copy
 
-from ..core.types import Station
-from ..core.sim import Simulation
-from ..core.builder import build_vehicles_from_allocation
+from ..simulation.types import Station
+from ..simulation.engine import Simulation
+from ..simulation.builder import build_vehicles_from_allocation
 from ..travel.base import ITravelModel
 from ..policies.dispatch_base import IDispatchPolicy
 from ..plans.schema import StationPlan, AllocationPlan
