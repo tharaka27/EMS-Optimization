@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import List, Tuple
-from ..core.types import Call
+from ..simulation.types import Call
 
 def mock_calls() -> List[Call]:
     t0 = 1_700_000_000
